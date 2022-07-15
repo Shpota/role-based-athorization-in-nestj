@@ -1,35 +1,36 @@
 import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth/auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { HasRoles } from './auth/has-roles.decorator';
 import { Role } from './model/role.enum';
 import { RolesGuard } from './auth/roles.guard';
+import { LocalAuthGuard } from './auth/local-auth.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Controller()
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   async login(@Request() req) {
     return this.authService.login(req.user);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
   }
 
   @HasRoles(Role.Admin)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('admin')
   onlyAdmin(@Request() req) {
     return req.user;
   }
 
   @HasRoles(Role.User)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('user')
   onlyUser(@Request() req) {
     return req.user;
